@@ -9,9 +9,15 @@
 // and/or to add some other includes
 #include <webots/Robot.hpp>
 #include <webots/Motor.hpp>
+#include <webots/PositionSensor.hpp>
+
+#include <iostream>
 
 const int TIME_STEP {64};
 const double MAX_SPEEED {6.28};
+const double WHEEL_RADIUS {0.02};
+const double AXLE_LENGTH {0.052};
+
 
 int main(int argc, char **argv) {
   webots::Robot robot {};
@@ -19,6 +25,12 @@ int main(int argc, char **argv) {
   webots::Motor* leftMotor {robot.getMotor("left wheel motor")};
   webots::Motor* rightMotor {robot.getMotor("right wheel motor")};
   
+  webots::PositionSensor* leftEncoder {robot.getPositionSensor("left wheel sensor")};
+  webots::PositionSensor* rightEncoder {robot.getPositionSensor("right wheel sensor")};
+
+  leftEncoder->enable(TIME_STEP);
+  rightEncoder->enable(TIME_STEP);
+
   // leftMotor->setPosition(10.0);
   // rightMotor->setPosition(10.0);
   
@@ -29,7 +41,14 @@ int main(int argc, char **argv) {
   rightMotor->setVelocity(-0.1 * MAX_SPEEED);
   
   
-  while(robot.step(TIME_STEP) != -1);
+  while(robot.step(TIME_STEP) != -1) {
+    double leftPosition {leftEncoder->getValue()};
+    double rightPosition {rightEncoder->getValue()};
+    std::cout << leftPosition << ' ' << rightPosition << ' ';
+    std::cout << (rightPosition + leftPosition) * WHEEL_RADIUS / 2 << ' ';
+    std::cout << (rightPosition - leftPosition) * WHEEL_RADIUS / AXLE_LENGTH << '\n';
+    
+  };
   
   return 0;
 }
